@@ -12,9 +12,9 @@ def get_user_profile():
     profile = {}
     
     questions = [
-        "What's your age?",
-        "What are your main interests or hobbies?",
-        "What's your favorite type of music?",
+        "Hi there, I am your personalized tutor from TUEX. How old are you?",
+        "Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?",
+        "You know what I find that super cool as well! What kind of music do you like?",
         "Do you prefer fiction or non-fiction?",
         "What's your favorite subject or field of study?",
         "Are you more of a morning person or night owl?",
