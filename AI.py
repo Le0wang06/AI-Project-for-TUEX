@@ -4,6 +4,7 @@ from openai import OpenAI
 import time
 import sys
 
+
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
 
 def handle_api_request(user_input, max_retries=3):
