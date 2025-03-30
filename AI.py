@@ -16,7 +16,7 @@ def get_user_profile():
         "Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?",
         "You know what I find that super cool as well! What kind of music do you like?",
         "Do you prefer fiction or non-fiction?",
-        "What's your favorite subject or field of study?",
+        "What's your favorite subject or field of study in school? For me I really love math and science!",
         "Are you more of a morning person or night owl?",
         "What's your preferred way to learn (reading, watching, doing)?",
         "What's your favorite season?",
