@@ -7,22 +7,60 @@ import sys
 
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
 
-def handle_api_request(user_input, max_retries=3):
+def get_user_profile():
+    print("\nLet's personalize your experience! Please answer these quick questions:")
+    profile = {}
+    
+    questions = [
+        "What's your age?",
+        "What are your main interests or hobbies?",
+        "What's your favorite type of music?",
+        "Do you prefer fiction or non-fiction?",
+        "What's your favorite subject or field of study?",
+        "Are you more of a morning person or night owl?",
+        "What's your preferred way to learn (reading, watching, doing)?",
+        "What's your favorite season?",
+        "Do you prefer indoor or outdoor activities?",
+        "What's your communication style (formal, casual, technical)?"
+    ]
+    
+    for question in questions:
+        while True:
+            answer = input(f"\n{question}\n> ").strip()
+            if answer:  # Only accept non-empty answers
+                profile[question] = answer
+                break
+            print("Please provide an answer.")
+    
+    return profile
+
+def create_personalized_system_prompt(profile):
+    interests = profile["What are your main interests or hobbies?"]
+    communication_style = profile["What's your communication style (formal, casual, technical)?"]
+    age = profile["What's your age?"]
+    
+    return f"""You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
+    Use a {communication_style} communication style. Be engaging and relate responses to their interests.
+    Keep responses concise but friendly. If relevant, incorporate their interests in music ({profile["What's your favorite type of music?"]}),
+    preferred learning style ({profile["What's your preferred way to learn (reading, watching, doing)?"]}),
+    and other preferences to make responses more personal."""
+
+def handle_api_request(user_input, profile, max_retries=3):
     for attempt in range(max_retries):
         try:
             print("\nResponse: ", end="", flush=True)
             response = client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[
-                    {"role": "system", "content": "Be concise but informative. Use bullet points for multiple ideas."},
+                    {"role": "system", "content": create_personalized_system_prompt(profile)},
                     {"role": "user", "content": user_input},
                 ],
-                temperature=0.0,
-                max_tokens=200,  # Increased for more content
-                presence_penalty=0,
-                frequency_penalty=0,
+                temperature=0.7,
+                max_tokens=1000,
+                presence_penalty=0.6,
+                frequency_penalty=0.6,
                 stream=True,
-                top_p=0.1,
+                top_p=0.95,
                 n=1
             )
             
@@ -65,16 +103,24 @@ def handle_api_request(user_input, max_retries=3):
             else:
                 return "Failed to get a response after multiple attempts. Please try again later."
 
-while True:
-    try:
-        UserInput = input("\nEnter your question (or 'quit' to exit): ")
-        if UserInput.lower() == 'quit':
-            break
+def main():
+    print("Welcome to your personalized AI assistant!")
+    profile = get_user_profile()
+    print("\nGreat! Now I know more about you. Let's start chatting!")
+    
+    while True:
+        try:
+            UserInput = input("\nEnter your question (or 'quit' to exit): ")
+            if UserInput.lower() == 'quit':
+                break
+                
+            handle_api_request(UserInput, profile)
             
-        handle_api_request(UserInput)
-        
-    except KeyboardInterrupt:
-        print("\nGoodbye!")
-        break
-    except Exception as e:
-        print(f"\nAn unexpected error occurred: {str(e)}")
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"\nAn unexpected error occurred: {str(e)}")
+
+if __name__ == "__main__":
+    main()
