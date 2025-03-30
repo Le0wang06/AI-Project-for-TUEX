@@ -21,7 +21,8 @@ def get_user_profile():
         "What's your preferred way to learn (reading, watching, doing)?",
         "What's your favorite season?",
         "Do you prefer indoor or outdoor activities?",
-        "What's your communication style (formal, casual, technical)?"
+        "What's your communication style (formal, casual, technical)?",
+        "What's your preferred language?"
     ]
     
     for question in questions:
@@ -35,15 +36,21 @@ def get_user_profile():
     return profile
 
 def create_personalized_system_prompt(profile):
-    interests = profile["What are your main interests or hobbies?"]
+    interests = profile["Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?"]
     communication_style = profile["What's your communication style (formal, casual, technical)?"]
-    age = profile["What's your age?"]
+    age = profile["Hi there, I am your personalized tutor from TUEX. How old are you?"]
+    language = profile["What's your preferred language?"]
     
-    return f"""You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
+    return f"""You are a personalized AI tutor for TUEX Education, a Canadian tutoring platform that connects students with high-quality academic support. Your role is to help students understand and master subjects like Math, Science, and English, following Canadian curriculum standards.
+
+    Your tone is friendly, professional, patient, and encouraging. You support personalized learning by adjusting your teaching style based on the student’s needs, learning pace, and background. Many of your students are multilingual, especially English-language learners from Chinese-speaking families.
+
+    You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
     Use a {communication_style} communication style. Be engaging and relate responses to their interests.
-    Keep responses concise but friendly. If relevant, incorporate their interests in music ({profile["What's your favorite type of music?"]}),
+    Keep responses concise but friendly. If relevant, incorporate their interests in music ({profile["You know what I find that super cool as well! What kind of music do you like?"]}),
     preferred learning style ({profile["What's your preferred way to learn (reading, watching, doing)?"]}),
-    and other preferences to make responses more personal."""
+    and other preferences to make responses more personal.
+    This person speaks {language}."""
 
 def handle_api_request(user_input, profile, max_retries=3):
     for attempt in range(max_retries):
