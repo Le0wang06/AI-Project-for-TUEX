@@ -9,8 +9,11 @@ client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https:/
 
 def get_user_profile():
     print("\nLet's personalize your experience! Please answer these quick questions:")
+
+    # Map for question to answer
     profile = {}
-    
+
+    #list of questions
     questions = [
         "Hi there, I am your personalized tutor from TUEX. How old are you?",
         "Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?",
@@ -51,6 +54,9 @@ def create_personalized_system_prompt(profile):
     preferred learning style ({profile["What's your preferred way to learn (reading, watching, doing)?"]}),
     and other preferences to make responses more personal.
     This person speaks {language}."""
+
+
+
 
 def handle_api_request(user_input, profile, max_retries=3):
     for attempt in range(max_retries):
@@ -111,14 +117,18 @@ def handle_api_request(user_input, profile, max_retries=3):
                 return "Failed to get a response after multiple attempts. Please try again later."
 
 def main():
-    print("Welcome to your personalized AI assistant!")
+
+    #collecting user profile+ trigger the chat
+
     profile = get_user_profile()
     print("\nGreat! Now I know more about you. Let's start chatting!")
     
+    #running the chat
     while True:
         try:
             UserInput = input("\nEnter your question (or 'quit' to exit): ")
             if UserInput.lower() == 'quit':
+                print("\nGoodbye!")
                 break
                 
             handle_api_request(UserInput, profile)
@@ -128,6 +138,9 @@ def main():
             break
         except Exception as e:
             print(f"\nAn unexpected error occurred: {str(e)}")
+
+
+
 
 if __name__ == "__main__":
     main()
