@@ -6,25 +6,72 @@ import time
 import sys
 from gtts import gTTS
 import os
+import pygame
+import re
 
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
 
+def remove_emojis(text):
+    """Remove emojis from text"""
+    emoji_pattern = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        u"\U00002702-\U000027B0"
+        u"\U00002702-\U000027B0"
+        u"\U000024C2-\U0001F251"
+        u"\U0001f926-\U0001f937"
+        u"\U00010000-\U0010ffff"
+        u"\u2640-\u2642" 
+        u"\u2600-\u2B55"
+        u"\u200d"
+        u"\u23cf"
+        u"\u23e9"
+        u"\u231a"
+        u"\ufe0f"  # dingbats
+        u"\u3030"
+                      "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', text)
+
 def speak(text):
-    """Convert text to speech using Google Text-to-Speech"""
-    print("\nAI Speaking: ", end="", flush=True)
-    print(text)  # Print the text
+    """Convert text to speech with natural, expressive voice"""
+    # Remove emojis before converting to speech
+    clean_text = remove_emojis(text)
     
-    # Create gTTS object
-    tts = gTTS(text=text, lang='en', slow=False)
+    # Add natural pauses and emphasis
+    sentences = clean_text.split('.')
+    processed_text = ''
+    for sentence in sentences:
+        if sentence.strip():
+            # Add slight pause after each sentence
+            processed_text += sentence.strip() + '. '
+            # Add longer pause after questions
+            if '?' in sentence:
+                processed_text += ' '
+    
+    # Create gTTS object with natural parameters
+    tts = gTTS(
+        text=processed_text,
+        lang='en',
+        slow=False,
+        tld='com',  # Use US English accent
+        lang_check=False  # Allow more natural speech
+    )
     
     # Save the audio file
     tts.save("temp_speech.mp3")
     
-    # Play the audio file
-    os.system("start temp_speech.mp3")
+    # Initialize pygame mixer
+    pygame.mixer.init()
     
-    # Wait for the speech to finish (rough estimate)
-    time.sleep(len(text.split()) * 0.3)  # Adjust timing as needed
+    # Load and play the audio file
+    pygame.mixer.music.load("temp_speech.mp3")
+    pygame.mixer.music.play()
+    
+    # Wait for the audio to finish playing
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
     
     # Clean up the temporary file
     try:
