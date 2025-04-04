@@ -4,25 +4,33 @@
 from openai import OpenAI
 import time
 import sys
-import pyttsx3
-
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
-# Set properties for better voice
-engine.setProperty('rate', 500)  # Speed of speech (increased from 150)
-engine.setProperty('volume', 0.9)  # Volume (0.0 to 1.0)
+from gtts import gTTS
+import os
 
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
 
 def speak(text):
-    """Convert text to speech"""
+    """Convert text to speech using Google Text-to-Speech"""
     print("\nAI Speaking: ", end="", flush=True)
-    words = text.split()
-    for word in words:
-        print(word, end=" ", flush=True)
-        engine.say(word)
-        engine.runAndWait()
-    print()  # New line after speaking
+    print(text)  # Print the text
+    
+    # Create gTTS object
+    tts = gTTS(text=text, lang='en', slow=False)
+    
+    # Save the audio file
+    tts.save("temp_speech.mp3")
+    
+    # Play the audio file
+    os.system("start temp_speech.mp3")
+    
+    # Wait for the speech to finish (rough estimate)
+    time.sleep(len(text.split()) * 0.3)  # Adjust timing as needed
+    
+    # Clean up the temporary file
+    try:
+        os.remove("temp_speech.mp3")
+    except:
+        pass
 
 def get_user_profile():
     print("\nLet's personalize your experience! Please answer these quick questions:")
