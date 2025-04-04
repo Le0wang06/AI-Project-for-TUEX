@@ -1,11 +1,28 @@
 # Please install OpenAI SDK first: `pip3 install openai`
+# Also install pyttsx3: `pip install pyttsx3`
 
 from openai import OpenAI
 import time
 import sys
+import pyttsx3
 
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+# Set properties for better voice
+engine.setProperty('rate', 150)  # Speed of speech
+engine.setProperty('volume', 0.9)  # Volume (0.0 to 1.0)
 
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
+
+def speak(text):
+    """Convert text to speech"""
+    print("\nAI Speaking: ", end="", flush=True)
+    words = text.split()
+    for word in words:
+        print(word, end=" ", flush=True)
+        engine.say(word)
+        engine.runAndWait()
+    print()  # New line after speaking
 
 def get_user_profile():
     print("\nLet's personalize your experience! Please answer these quick questions:")
@@ -19,13 +36,13 @@ def get_user_profile():
     questions = [
         "Hi there, I am your personalized tutor from TUEX. How old are you?",
         "Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?",
-        "You know what I find that super cool as well! What kind of music do you like?",
-        "Do you prefer fiction or non-fiction?",
+        "You know what I find that super cool as well! What kind of music do you like? I like to listen to music while I work and study.",
+        "Do you prefer fiction or non-fiction? I like to read both!",
         "What's your favorite subject or field of study in school? For me I really love math and science!",
-        "Are you more of a morning person or night owl?",
-        "What's your preferred way to learn (reading, watching, doing)?",
-        "What's your favorite season?",
-        "Do you prefer indoor or outdoor activities?",
+        "Are you more of a morning person or night owl? I'm a night owl, but I try to wake up early to start my day, It's important to get enough sleep.",
+        "What's your preferred way to learn (reading, watching, doing)? I like to do and watch videos, but I also like to read.",
+        "What's your favorite season? I like spring and summer, but I also like winter because I can play with snow.",
+        "Do you prefer indoor or outdoor activities? I like both, but I prefer outdoor activities like playing soccer and basketball.",
         "What's your communication style (formal, casual, technical)?",
         "What's your preferred language?"
     ]
@@ -44,11 +61,12 @@ def get_user_profile():
 
 
 def create_personalized_system_prompt(profile):
-
     interests = profile["Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?"]
     communication_style = profile["What's your communication style (formal, casual, technical)?"]
     age = profile["Hi there, I am your personalized tutor from TUEX. How old are you?"]
     language = profile["What's your preferred language?"]
+    music = profile["You know what I find that super cool as well! What kind of music do you like? I like to listen to music while I work and study."]
+    learning_style = profile["What's your preferred way to learn (reading, watching, doing)? I like to do and watch videos, but I also like to read."]
     
     return f"""You are a personalized AI tutor for TUEX Education, a Canadian tutoring platform that connects students with high-quality academic support. Your role is to help students understand and master subjects like Math, Science, and English, following Canadian curriculum standards.
 
@@ -56,8 +74,8 @@ def create_personalized_system_prompt(profile):
 
     You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
     Use a {communication_style} communication style. Be engaging and relate responses to their interests.
-    Keep responses concise but friendly. If relevant, incorporate their interests in music ({profile["You know what I find that super cool as well! What kind of music do you like?"]}),
-    preferred learning style ({profile["What's your preferred way to learn (reading, watching, doing)?"]}),
+    Keep responses concise but friendly. If relevant, incorporate their interests in music ({music}),
+    preferred learning style ({learning_style}),
     and other preferences to make responses more personal.
     This person speaks {language}."""
 
@@ -89,6 +107,9 @@ def handle_api_request(user_input, profile, max_retries=3):
                     print(content, end="", flush=True)
                     full_response += content
             print()  # New line after response
+            
+            # Speak the response
+            speak(full_response)
             return full_response
             
         except Exception as e:
