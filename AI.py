@@ -8,8 +8,15 @@ from gtts import gTTS
 import os
 import pygame
 import re
+from dotenv import load_dotenv
 
-client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
+# Load environment variables
+load_dotenv()
+
+# Get API key from environment variable or use default
+api_key = os.environ.get("OPENAI_API_KEY", "sk-4c9926abc4d44e21978dfba16b35a043")
+
+client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
 def remove_emojis(text):
     """Remove emojis from text"""
@@ -136,10 +143,11 @@ def create_personalized_system_prompt(profile):
 
 
 
-def handle_api_request(user_input, profile, max_retries=3):
+def handle_api_request(user_input, profile, max_retries=3, speak_response=False):
     for attempt in range(max_retries):
         try:
-            print("\nResponse: ", end="", flush=True)
+            if not speak_response:
+                print("\nResponse: ", end="", flush=True)
             response = client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[
@@ -159,12 +167,16 @@ def handle_api_request(user_input, profile, max_retries=3):
             for chunk in response:
                 if chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
-                    print(content, end="", flush=True)
+                    if not speak_response:
+                        print(content, end="", flush=True)
                     full_response += content
-            print()  # New line after response
+            if not speak_response:
+                print()  # New line after response
             
-            # Speak the response
-            speak(full_response)
+            # Only speak the response if requested (for console mode)
+            if speak_response:
+                speak(full_response)
+                
             return full_response
             
         except Exception as e:
@@ -198,9 +210,8 @@ def handle_api_request(user_input, profile, max_retries=3):
                 return "Failed to get a response after multiple attempts. Please try again later."
 
 def main():
-
+    """Run the AI assistant in console mode with text-to-speech enabled"""
     #collecting user profile+ trigger the chat
-
     profile = get_user_profile()
     print("\nGreat! Now I know more about you. Let's start chatting!")
     
@@ -211,7 +222,7 @@ def main():
             if UserInput.lower() == 'quit':
                 print("\nGoodbye!")
                 break
-            handle_api_request(UserInput, profile)
+            handle_api_request(UserInput, profile, speak_response=True)
         except KeyboardInterrupt:
             print("\nGoodbye!")
             break

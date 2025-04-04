@@ -1,0 +1,41 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Vercel
+.vercel
+node_modules/
+
+# Temporary files
+temp_speech.mp3
+*.mp3
+
+# Virtual Environment
+venv/
+.venv/
+ENV/
+
+# OS specific
+.DS_Store
+Thumbs.db 
