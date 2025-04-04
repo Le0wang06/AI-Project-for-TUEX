@@ -9,7 +9,7 @@ import pyttsx3
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
 # Set properties for better voice
-engine.setProperty('rate', 150)  # Speed of speech
+engine.setProperty('rate', 500)  # Speed of speech (increased from 150)
 engine.setProperty('volume', 0.9)  # Volume (0.0 to 1.0)
 
 client = OpenAI(api_key="sk-4c9926abc4d44e21978dfba16b35a043", base_url="https://api.deepseek.com")
