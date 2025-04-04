@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get API key from environment variable or use default
-api_key = os.environ.get("OPENAI_API_KEY", "sk-4c9926abc4d44e21978dfba16b35a043")
+api_key = os.environ.get("OPENAI_API_KEY", "ur api")
 
 client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
