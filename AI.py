@@ -10,6 +10,8 @@ import os
 import pygame
 import re
 from dotenv import load_dotenv 
+
+
 # Load environment variables
 load_dotenv()
 
@@ -42,11 +44,22 @@ def remove_emojis(text):
                       "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', text)
 
+def clean_special_chars(text):
+    """Remove special characters from text"""
+    # Remove asterisks, dashes, and other special characters
+    special_chars = ['*', '-', '_', '~', '`', '>', '<', '|', '\\', '/']
+
+    for char in special_chars:
+        text = text.replace(char, '')
+    return text
 
 def speak(text):
     """Convert text to speech with natural, expressive voice"""
-    # Remove emojis before converting to speech
+
+    
+    # Remove emojis and special characters before converting to speech
     clean_text = remove_emojis(text)
+    clean_text = clean_special_chars(clean_text)
     
     # Add natural pauses and emphasis
     sentences = clean_text.split('.')
