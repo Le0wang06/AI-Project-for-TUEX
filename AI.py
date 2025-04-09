@@ -1,6 +1,7 @@
 # Please install OpenAI SDK first: `pip3 install openai`
 # Also install pyttsx3: `pip install pyttsx3`
 
+
 from openai import OpenAI
 import time
 import sys
