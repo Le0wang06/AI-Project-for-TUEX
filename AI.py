@@ -9,12 +9,12 @@ import os
 import pygame
 import re
 from dotenv import load_dotenv 
-
 # Load environment variables
 load_dotenv()
 
 # Get API key from environment variable or use default
-api_key = os.environ.get("OPENAI_API_KEY", "ur api")
+
+api_key = os.environ.get("OPENAI_API_KEY", "ur api")    
 
 client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
