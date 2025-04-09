@@ -8,7 +8,7 @@ from gtts import gTTS
 import os
 import pygame
 import re
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +40,7 @@ def remove_emojis(text):
         u"\u3030"
                       "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', text)
+
 
 def speak(text):
     """Convert text to speech with natural, expressive voice"""
