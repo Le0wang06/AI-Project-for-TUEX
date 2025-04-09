@@ -68,25 +68,45 @@ def speak(text):
         lang_check=False  # Allow more natural speech
     )
     
-    # Save the audio file
-    tts.save("temp_speech.mp3")
+    # Ensure pygame mixer is initialized
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
     
-    # Initialize pygame mixer
-    pygame.mixer.init()
+    # Stop any currently playing audio
+    pygame.mixer.music.stop()
     
-    # Load and play the audio file
-    pygame.mixer.music.load("temp_speech.mp3")
-    pygame.mixer.music.play()
+    # Wait a short moment to ensure the file is released
+    time.sleep(0.1)
     
-    # Wait for the audio to finish playing
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)
+    # Generate a unique filename for this session
+    temp_file = f"temp_speech_{int(time.time())}.mp3"
     
-    # Clean up the temporary file
     try:
-        os.remove("temp_speech.mp3")
-    except:
-        pass
+        # Save the audio file
+        tts.save(temp_file)
+        
+        # Load and play the audio file
+        pygame.mixer.music.load(temp_file)
+        pygame.mixer.music.play()
+        
+        # Wait for the audio to finish playing
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+        
+        # Clean up the temporary file
+        try:
+            os.remove(temp_file)
+        except:
+            pass
+            
+    except Exception as e:
+        print(f"Error playing audio: {str(e)}")
+        # Clean up the temporary file if it exists
+        try:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+        except:
+            pass
 
 def get_user_profile():
     print("\nLet's personalize your experience! Please answer these quick questions:")
@@ -123,7 +143,6 @@ def get_user_profile():
 
 
 
-
 def create_personalized_system_prompt(profile):
     interests = profile["Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?"]
     communication_style = profile["What's your communication style (formal, casual, technical)?"]
@@ -142,7 +161,6 @@ def create_personalized_system_prompt(profile):
     preferred learning style ({learning_style}),
     and other preferences to make responses more personal.
     This person speaks {language}."""
-
 
 
 def handle_api_request(user_input, profile, max_retries=3, speak_response=False):
@@ -233,4 +251,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  
