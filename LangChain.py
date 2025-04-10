@@ -1,26 +1,13 @@
-import os 
-from langchain_community.llms import OpenAI
+import os
 from dotenv import load_dotenv
+from langchain_deepseek import ChatDeepSeek
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-
-
-def main():
-  llm = OpenAI(model="gpt-4", api_key=OPENAI_API_KEY)
-  response = llm.invoke("Summarize the history of the internet in 3 sentences.")
-  print(response)
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
-
-
-
+llm = ChatDeepSeek(model="deepseek-chat", api_key=api_key)
+response = llm.invoke("Sing a ballad of LangChain.")
+print(response.content)
