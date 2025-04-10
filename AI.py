@@ -1,40 +1,50 @@
-# Please install OpenAI SDK first: `pip3 install openai`
-# Also install pyttsx3: `pip install pyttsx3`
+"""
+TUEX AI Tutor - A personalized AI tutoring system
+This module provides an interactive AI tutor that can engage in personalized conversations
+and provide text-to-speech responses.
+Bring Next Generation AI to Education with TUEX that actually care about the students. 
+Contains emotional intelligence and a friendly tone.
+"""
 
-
-
-from openai import OpenAI
-import time
-import sys
-
-
-from gtts import gTTS
-
+# Standard library imports
 import os
-import pygame
 import re
+import sys
+import time
 
-# Ignore for now I think....
-from dotenv import load_dotenv 
+# Third-party imports
+from openai import OpenAI
+from gtts import gTTS
+import pygame
 
+#This is used to get the API key from the environment variable which is private. You don't need this if you want to use the API key directly. 
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Get API key from environment variable or use default
+# Configuration / setup API SKEY
+API_KEY = os.environ.get("OPENAI_API_KEY", "ur api")
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
-api_key = os.environ.get("OPENAI_API_KEY", "ur api")    
+# Initialize OpenAI client
+client = OpenAI(api_key=API_KEY, base_url=DEEPSEEK_BASE_URL)
 
-client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-
-def remove_emojis(text):
-    """Remove emojis from text"""
+def remove_emojis(text: str) -> str:
+    """
+    Remove emojis and special Unicode characters from text.
+    
+    Args:
+        text (str): Input text containing emojis
+        
+    Returns:
+        str: Clean text without emojis
+    """
     emoji_pattern = re.compile("["
         u"\U0001F600-\U0001F64F"  # emoticons
         u"\U0001F300-\U0001F5FF"  # symbols & pictographs
         u"\U0001F680-\U0001F6FF"  # transport & map symbols
         u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        u"\U00002702-\U000027B0"
         u"\U00002702-\U000027B0"
         u"\U000024C2-\U0001F251"
         u"\U0001f926-\U0001f937"
@@ -47,99 +57,105 @@ def remove_emojis(text):
         u"\u231a"
         u"\ufe0f"  # dingbats
         u"\u3030"
-                      "]+", flags=re.UNICODE)
+        "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', text)
 
-def clean_special_chars(text):
-    """Remove special characters from text"""
-    # Remove asterisks, dashes, and other special characters
+def clean_special_chars(text: str) -> str:
+    """
+    Remove special characters from text that might interfere with text-to-speech.
+    
+    Args:
+        text (str): Input text containing special characters
+        
+    Returns:
+        str: Clean text without special characters
+    """
     special_chars = ['*', '_', '~', '`', '>', '<', '|', '\\', '/']
-
     for char in special_chars:
         text = text.replace(char, '')
     return text
 
-
-
-def speak(text):
-
-    """Convert text to speech with natural, expressive voice"""
-
-    # Remove emojis and special characters before converting to speech
-    clean_text = remove_emojis(text)
-    clean_text = clean_special_chars(clean_text)
+def process_text_for_speech(text: str) -> str:
+    """
+    Process text to make it more natural for speech synthesis.
     
-    # Add natural pauses and emphasis
-    sentences = clean_text.split('.')
+    Args:
+        text (str): Input text to process
+        
+    Returns:
+        str: Processed text with natural pauses
+    """
+    
+    sentences = text.split('.')
     processed_text = ''
     for sentence in sentences:
         if sentence.strip():
-            # Add slight pause after each sentence
             processed_text += sentence.strip() + '. '
-            # Add longer pause after questions
             if '?' in sentence:
                 processed_text += ' '
+    return processed_text
+
+def speak(text: str) -> None:
+    """
+    Convert text to speech and play it using gTTS and pygame.
     
-    # Create gTTS object with natural parameters
-    tts = gTTS(
-        text=processed_text,
-        lang='en',
-        slow=False,
-        tld='com',  # Use US English accent
-        lang_check=False  # Allow more natural speech
-    )
+    Args:
+        text (str): Text to convert to speech
+    """
+    # Clean and process text
+    clean_text = remove_emojis(text)
+    clean_text = clean_special_chars(clean_text)
+    processed_text = process_text_for_speech(clean_text)
     
-    # Ensure pygame mixer is initialized
+    # Initialize pygame mixer if needed
     if not pygame.mixer.get_init():
         pygame.mixer.init()
     
     # Stop any currently playing audio
     pygame.mixer.music.stop()
-    
-    # Wait a short moment to ensure the file is released
     time.sleep(0.1)
     
-    # Generate a unique filename for this session
+    # Generate unique filename
     temp_file = f"temp_speech_{int(time.time())}.mp3"
     
     try:
-        # Save the audio file
+        # Create and save speech
+        tts = gTTS(
+            text=processed_text,
+            lang='en',
+            slow=False,
+            tld='com',
+            lang_check=False
+        )
         tts.save(temp_file)
         
-        # Load and play the audio file
+        # Play audio
         pygame.mixer.music.load(temp_file)
         pygame.mixer.music.play()
         
-        # Wait for the audio to finish playing
+        # Wait for audio to finish
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)
-        
-        # Clean up the temporary file
-        try:
-            os.remove(temp_file)
-        except:
-            pass
             
     except Exception as e:
         print(f"Error playing audio: {str(e)}")
-        # Clean up the temporary file if it exists
+    finally:
+        # Clean up temporary file
         try:
             if os.path.exists(temp_file):
                 os.remove(temp_file)
         except:
             pass
 
-
-
-def get_user_profile():
+def get_user_profile() -> dict:
+    """
+    Collect user profile information through interactive questions.
+    
+    Returns:
+        dict: Dictionary containing user's profile information
+    """
     print("\nLet's personalize your experience! Please answer these quick questions:")
-
-    # Map for question to answer
-
-    profile = {}
-
-
-    #list of questions
+    
     questions = [
         "Hi there, I am your personalized tutor from TUEX. How old are you?",
         "Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?",
@@ -153,21 +169,27 @@ def get_user_profile():
         "What's your communication style (formal, casual, technical)?",
         "What's your preferred language?"
     ]
-
     
+    profile = {}
     for question in questions:
         while True:
             answer = input(f"\n{question}\n> ").strip()
-            if answer:  # Only accept non-empty answers
+            if answer:
                 profile[question] = answer
                 break
             print("Please provide an answer.")
     return profile
 
-
-
-def create_personalized_system_prompt(profile):
-
+def create_personalized_system_prompt(profile: dict) -> str:
+    """
+    Create a personalized system prompt based on user profile.
+    
+    Args:
+        profile (dict): User's profile information
+        
+    Returns:
+        str: Personalized system prompt for the AI
+    """
     interests = profile["Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?"]
     communication_style = profile["What's your communication style (formal, casual, technical)?"]
     age = profile["Hi there, I am your personalized tutor from TUEX. How old are you?"]
@@ -177,22 +199,33 @@ def create_personalized_system_prompt(profile):
     
     return f"""You are a personalized AI tutor for TUEX Education, a Canadian tutoring platform that connects students with high-quality academic support. Your role is to help students understand and master subjects like Math, Science, and English, following Canadian curriculum standards.
 
-    Your tone is friendly, professional, patient, and encouraging. You support personalized learning by adjusting your teaching style based on the student's needs, learning pace, and background. Many of your students are multilingual, especially English-language learners from Chinese-speaking families.
+Your tone is friendly, professional, patient, and encouraging. You support personalized learning by adjusting your teaching style based on the student's needs, learning pace, and background. Many of your students are multilingual, especially English-language learners from Chinese-speaking families.
 
-    You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
-    Use a {communication_style} communication style. Be engaging and relate responses to their interests.
-    Keep responses concise but friendly. If relevant, incorporate their interests in music ({music}),
-    preferred learning style ({learning_style}),
-    and other preferences to make responses more personal.
-    This person speaks {language}."""
+You are a personalized AI assistant for a {age}-year-old who is interested in {interests}. 
+Use a {communication_style} communication style. Be engaging and relate responses to their interests.
+Keep responses concise but friendly. If relevant, incorporate their interests in music ({music}),
+preferred learning style ({learning_style}),
+and other preferences to make responses more personal.
+This person speaks {language}."""
 
-
-
-def handle_api_request(user_input, profile, max_retries=3, speak_response=False):
+def handle_api_request(user_input: str, profile: dict, max_retries: int = 3, speak_response: bool = False) -> str:
+    """
+    Handle API requests to the AI model with retry logic.
+    
+    Args:
+        user_input (str): User's input message
+        profile (dict): User's profile information
+        max_retries (int): Maximum number of retry attempts
+        speak_response (bool): Whether to speak the response
+        
+    Returns:
+        str: AI's response
+    """
     for attempt in range(max_retries):
         try:
             if not speak_response:
                 print("\nResponse: ", end="", flush=True)
+                
             response = client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[
@@ -215,10 +248,10 @@ def handle_api_request(user_input, profile, max_retries=3, speak_response=False)
                     if not speak_response:
                         print(content, end="", flush=True)
                     full_response += content
+                    
             if not speak_response:
-                print()  # New line after response
+                print()
             
-            # Only speak the response if requested (for console mode)
             if speak_response:
                 speak(full_response)
                 
@@ -226,26 +259,22 @@ def handle_api_request(user_input, profile, max_retries=3, speak_response=False)
             
         except Exception as e:
             error_str = str(e).lower()
+            error_messages = {
+                "400": "Invalid request format. Please check your input.",
+                "401": "Authentication failed. Please check your API key.",
+                "402": "Insufficient balance. Please add funds to your account.",
+                "422": "Invalid parameters. Please check your request parameters.",
+                "429": f"Rate limit reached. Waiting {(attempt + 1) * 2} seconds...",
+                "500": "Server error. Please try again later.",
+                "503": f"Server overloaded. Waiting {(attempt + 1) * 2} seconds..."
+            }
             
-            if "400" in error_str:
-                print("Error 400: Invalid request format. Please check your input.")
-            elif "401" in error_str:
-                print("Error 401: Authentication failed. Please check your API key.")
-            elif "402" in error_str:
-                print("Error 402: Insufficient balance. Please add funds to your account.")
-            elif "422" in error_str:
-                print("Error 422: Invalid parameters. Please check your request parameters.")
-            elif "429" in error_str:
-                wait_time = (attempt + 1) * 2
-                print(f"Error 429: Rate limit reached. Waiting {wait_time} seconds...")
-                time.sleep(wait_time)
-            elif "500" in error_str:
-                print("Error 500: Server error. Please try again later.")
-                time.sleep(2)
-            elif "503" in error_str:
-                wait_time = (attempt + 1) * 2
-                print(f"Error 503: Server overloaded. Waiting {wait_time} seconds...")
-                time.sleep(wait_time)
+            for code, message in error_messages.items():
+                if code in error_str:
+                    print(f"Error {code}: {message}")
+                    if code in ["429", "503"]:
+                        time.sleep((attempt + 1) * 2)
+                    break
             else:
                 print(f"An unexpected error occurred: {str(e)}")
             
@@ -254,25 +283,29 @@ def handle_api_request(user_input, profile, max_retries=3, speak_response=False)
             else:
                 return "Failed to get a response after multiple attempts. Please try again later."
 
-def main():
-    """Run the AI assistant in console mode with text-to-speech enabled"""
-    #collecting user profile+ trigger the chat
-    profile = get_user_profile()
-    print("\nGreat! Now I know more about you. Let's start chatting!")
-    
-    #running the chat 
-    while True:
-        try:
-            UserInput = input("\nEnter your question (or 'quit' to exit): ")
-            if UserInput.lower() == 'quit':
+def main() -> None:
+    """Run the AI tutor in interactive mode."""
+    try:
+        profile = get_user_profile()
+        print("\nGreat! Now I know more about you. Let's start chatting!")
+        
+        while True:
+            try:
+                user_input = input("\nEnter your question (or 'quit' to exit): ")
+                if user_input.lower() == 'quit':
+                    print("\nGoodbye!")
+                    break
+                handle_api_request(user_input, profile, speak_response=True)
+            except KeyboardInterrupt:
                 print("\nGoodbye!")
                 break
-            handle_api_request(UserInput, profile, speak_response=True)
-        except KeyboardInterrupt:
-            print("\nGoodbye!")
-            break
-        except Exception as e:
-            print(f"\nAn unexpected error occurred: {str(e)}")
+            except Exception as e:
+                print(f"\nAn unexpected error occurred: {str(e)}")
+                
+    except Exception as e:
+        print(f"\nAn error occurred: {str(e)}")
+        sys.exit(1)
+
 
 
 if __name__ == "__main__":
