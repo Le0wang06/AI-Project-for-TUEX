@@ -2,13 +2,19 @@
 # Also install pyttsx3: `pip install pyttsx3`
 
 
+
 from openai import OpenAI
 import time
 import sys
+
+
 from gtts import gTTS
+
 import os
 import pygame
 import re
+
+# Ignore for now I think....
 from dotenv import load_dotenv 
 
 
@@ -47,16 +53,18 @@ def remove_emojis(text):
 def clean_special_chars(text):
     """Remove special characters from text"""
     # Remove asterisks, dashes, and other special characters
-    special_chars = ['*', '-', '_', '~', '`', '>', '<', '|', '\\', '/']
+    special_chars = ['*', '_', '~', '`', '>', '<', '|', '\\', '/']
 
     for char in special_chars:
         text = text.replace(char, '')
     return text
 
+
+
 def speak(text):
+
     """Convert text to speech with natural, expressive voice"""
 
-    
     # Remove emojis and special characters before converting to speech
     clean_text = remove_emojis(text)
     clean_text = clean_special_chars(clean_text)
@@ -121,6 +129,8 @@ def speak(text):
         except:
             pass
 
+
+
 def get_user_profile():
     print("\nLet's personalize your experience! Please answer these quick questions:")
 
@@ -157,6 +167,7 @@ def get_user_profile():
 
 
 def create_personalized_system_prompt(profile):
+
     interests = profile["Awesome! I love to work with students your age! What are some of your favorite activities? What really amaze you?"]
     communication_style = profile["What's your communication style (formal, casual, technical)?"]
     age = profile["Hi there, I am your personalized tutor from TUEX. How old are you?"]
@@ -174,6 +185,7 @@ def create_personalized_system_prompt(profile):
     preferred learning style ({learning_style}),
     and other preferences to make responses more personal.
     This person speaks {language}."""
+
 
 
 def handle_api_request(user_input, profile, max_retries=3, speak_response=False):
