@@ -26,3 +26,4 @@ user_input = input("Enter a text to translate: ")
 chain = prompt | llm
 response = chain.invoke({"text": user_input})
 print(response.content)
+
