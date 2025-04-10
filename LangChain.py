@@ -1,12 +1,23 @@
-import getpass
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 import os
 
-if not os.environ.get("OPENAI_API_KEY"):
-  os.environ["OPENAI_API_KEY"] = getpass.getpass("Enter API key for OpenAI: ")
+load_dotenv()
 
-from langchain.chat_models import init_chat_model
+# Get API key from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("DEEPSEEK_API_KEY not found in environment variables")
 
-model = init_chat_model("deepseek-chat", model_provider="deepseek")
+model = ChatOpenAI(
+    model="deepseek-chat",
+    api_key=api_key,
+    base_url="https://api.deepseek.com"
+)
 
-model.invoke("Hello, world!")
+def main():
+    response = model.invoke("Summarize the history of the internet in 3 sentences.")
+    print(response.content)
 
+if __name__ == "__main__":
+    main()
